@@ -1,0 +1,58 @@
+#!/usr/bin/python
+from docker import Client
+import json
+
+# Goal is to always have the image with the highest numeral (!) tag to be online
+#	and to stop containers with the same virtual hosts, but lower tags.
+
+# Connect to docker via dockerPy
+dockerCli = Client(base_url='unix://var/run/docker.sock')
+
+# Create an empty dict to store all virtual hosts
+listHosts={}
+
+# 
+{{ range $host, $containers := groupByMulti $ "Env.VIRTUAL_HOST" "," }}
+	
+# Create a python dictionary from basic JSON.
+#	TODO: Learn GO-templating an fix this more elegantly
+listHosts["{{ $host }})"] = []
+
+{{ range $index, $value := $containers }}
+listHosts["{{ $host }}"].append(json.loads('{{ json $value }}'))
+{{end}}
+
+{{end}}
+
+# TODO: Check if there are any matches at all; warn if none
+
+
+# Do the real stuff
+for hostName, dockerHost in listHosts.iteritems():
+	
+	maxTagAsInt = -1;
+	maxTagAsString = "";
+	
+	for container in dockerHost:
+	
+		if not 'Image' in container or not 'Tag' in container["Image"] or len(container['Image']['Tag']) == 0:
+			print "No tag found for %s" % container["Id"]
+			break;
+	
+		try:
+			tagAsInt = int(container['Image']['Tag'])
+		except:
+			print "Error while retrieving container tag for %s. Tag is: %s" % hostName, container['Image']['Tag']
+			break;
+			
+		if container['Image']['Tag'] and int(container['Image']['Tag']) and tagAsInt > maxTagAsInt:
+			maxTagAsInt = tagAsInt
+			maxTagAsString = container['Image']['Tag']
+	
+	if maxTagAsInt > -1:
+		for hostName, dockerHost in listHosts.iteritems():
+			for container in dockerHost:
+				if 'Image' in container and 'Tag' in container["Image"] and container['Image']['Tag'] != maxTagAsString:
+					print "Stopping: %s" % container['ID']
+					dockerCli.stop(container['ID'], 60*60)
+					
