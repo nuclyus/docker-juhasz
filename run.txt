@@ -1,1 +1,0 @@
-docker run -v /var/run/docker.sock:/tmp/docker.sock -v /srv/salt/etc:/etc/docker-gen/templates 237e47554c09 -interval 10 -watch -notify "python /tmp/juhasz.py" /etc/docker-gen/templates/juhasz.tmpl /srv/salt/etc/juhasz.py

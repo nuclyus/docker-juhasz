@@ -17,6 +17,7 @@ ADD juhasz.tmpl /var/juhasz/
 
 ENTRYPOINT ["/usr/local/bin/docker-gen"]
 
+
 # This command should be executed outside of the container
 # TODO: Use supervisor/cron instead of the interval parameter
 #command: docker-gen -interval 10 -watch -notify "python /tmp/juhasz_containers.py" /var/juhasz/juhasz.tmpl /tmp/juhasz.py
