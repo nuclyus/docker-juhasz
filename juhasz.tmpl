@@ -16,7 +16,8 @@ listHosts={}
 	
 # Create a python dictionary from basic JSON.
 #	TODO: Learn GO-templating an fix this more elegantly
-listHosts["{{ $host }})"] = []
+#	TODO: Check if $host is a valid key
+listHosts["{{ $host }}"] = []
 
 {{ range $index, $value := $containers }}
 listHosts["{{ $host }}"].append(json.loads('{{ json $value }}'))
@@ -42,7 +43,7 @@ for hostName, dockerHost in listHosts.iteritems():
 		try:
 			tagAsInt = int(container['Image']['Tag'])
 		except:
-			print "Error while retrieving container tag for %s. Tag is: %s" % hostName, container['Image']['Tag']
+			print "Error while retrieving container tag for %s. Tag is: %s" % (hostName, container['Image']['Tag'])
 			break;
 			
 		if container['Image']['Tag'] and int(container['Image']['Tag']) and tagAsInt > maxTagAsInt:
